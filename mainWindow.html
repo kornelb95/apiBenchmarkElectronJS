@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Api Benchmark</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav>
+      <div class="nav-wrapper">
+        <a class="brand-logo center">Api Benchmark</a>
+      </div>
+    </nav>
+    <ul></ul>
+  </body>
+  <script>
+    console.oldLog = console.log;
+    window.$log = [];
+    console.log = function(value) {
+      console.oldLog(value);
+      window.$log.push(value);
+    };
+
+    const apiBenchmark = require("api-benchmark");
+    const electron = require("electron");
+    const { ipcRenderer } = electron;
+    const ul = document.querySelector("ul");
+
+    ipcRenderer.on("test:add", function(e, test) {
+      // console.log(test);
+      const runTestBtn = document.createElement("button");
+      runTestBtn.className = "btn waves-effect waves-light";
+      runTestBtn.type = "button";
+      runTestBtn.textContent = "Rozpocznij test";
+      runTestBtn.addEventListener("click", () => {
+        runTest(test.apis, test.routes, test.options);
+      });
+      ul.className = "collection";
+      const li = document.createElement("li");
+      li.className = "collection-item";
+      let html =
+        "<ul class='test'><h3 class='center-align'>Test <i class='material-icons' onclick='removeItem(event)'>clear</i></h3>";
+      let routesHtml = "";
+      test.arrRoutes.forEach(el => {
+        routesHtml += `<li>Route: ${el.route}, Method: ${el.method}</li>`;
+      });
+      test.arrApis.forEach(el => {
+        html += `
+        <h5>Technologia: ${el.tech}</h5>
+        <ul>
+          <li>Api Url: ${el.url}</li>
+          ${routesHtml}
+          <li>Opóźnienie: ${test.options.delay}</li>
+          <li>Maksymalny czas testu: ${test.options.maxTime}</li>
+        </ul>
+        `;
+      });
+
+      li.innerHTML = html;
+      li.appendChild(runTestBtn);
+      ul.appendChild(li);
+    });
+
+    function removeItem(e) {
+      e.target.parentElement.parentElement.parentElement.remove();
+      if (ul.children.length == 0) {
+        ul.className = "";
+      }
+    }
+
+    function runTest(apis, routes, options) {
+      // console.log(apis);
+      // console.log(routes);
+      // console.log(options);
+      options.debug = true;
+      let results = {};
+      apiBenchmark.compare(apis, routes, options, function(err, result) {
+        // console.log(result);
+        results.result = result;
+        results.log = $log;
+        $log = [];
+        ipcRenderer.send("test:result", results);
+      });
+    }
+  </script>
+</html>

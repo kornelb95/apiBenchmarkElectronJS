@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Dodaj test</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <form>
+        <div class="ApiUrlSection">
+          <label>Api Url:</label>
+          <input
+            type="text"
+            class="apiUrl"
+            name="apiUrl"
+            value="https://jsonplaceholder.typicode.com/"
+            autofocus
+          />
+          <label>Technologia:</label>
+          <input
+            type="text"
+            class="apiTech"
+            name="apiTech"
+            value="nodejs"
+            autofocus
+          />
+        </div>
+        <div class="ApiUrlSection">
+          <label>Api Url:</label>
+          <input
+            type="text"
+            class="apiUrl"
+            name="apiUrl"
+            value="https://reqres.in/api/"
+            autofocus
+          />
+          <label>Technologia:</label>
+          <input
+            type="text"
+            class="apiTech"
+            name="apiTech"
+            value="python"
+            autofocus
+          />
+        </div>
+        <button type="button" class="btn" id="addUrlInpt">+</button>
+        <div class="ApiRouteSection">
+          <h2>Ustawienia dla routingu</h2>
+          <label>Api Route Name</label>
+          <input
+            type="text"
+            name="route"
+            value="users"
+            class="route"
+            autofocus
+          />
+          <label>HTTP Method</label>
+          <input
+            type="text"
+            name="method"
+            value="get"
+            class="method"
+            autofocus
+          />
+        </div>
+        <button type="button" class="btn" id="addRouteSection">+</button>
+
+        <div id="optionSection">
+          <h2>Opcje testu</h2>
+          <label>Opóźnienie między cyklami testu[s]</label>
+          <input type="number" value="0" name="delay" />
+          <label>Maksymalny czas testu[s]</label>
+          <input type="number" value="10" name="maxTime" />
+        </div>
+        <button class="btn waves-effect waves-light" type="submit">
+          Dodaj test
+        </button>
+      </form>
+    </div>
+
+    <script>
+      const electron = require("electron");
+      const { ipcRenderer } = electron;
+      const form = document.querySelector("form");
+
+      // const ApiUrlSection = document.querySelector("#ApiUrlSection");
+      const addUrlInpt = document.querySelector("#addUrlInpt");
+
+      const addRouteSection = document.querySelector("#addRouteSection");
+
+      addUrlInpt.addEventListener("click", function() {
+        const section = document.createElement("div");
+        section.className = "ApiUrlSection";
+        const inpt = document.createElement("input");
+        const label1 = document.createElement("label");
+        label1.textContent = "Api Url:";
+        inpt.type = "text";
+        inpt.className = "apiUrl";
+        const label2 = document.createElement("label");
+        label2.textContent = "Technologia:";
+        const inpt2 = document.createElement("input");
+        inpt2.type = "text";
+        inpt2.className = "apiTech";
+        section.appendChild(label1);
+        section.appendChild(inpt);
+        section.appendChild(label2);
+        section.appendChild(inpt2);
+
+        form.insertBefore(section, addUrlInpt);
+      });
+
+      addRouteSection.addEventListener("click", function() {
+        const section = document.createElement("div");
+        section.className = "ApiRouteSection";
+        const inpt1 = document.createElement("input");
+        const label1 = document.createElement("label");
+        label1.textContent = "Api Route Name";
+        inpt1.type = "text";
+        inpt1.className = "route";
+        const inpt2 = document.createElement("input");
+        const label2 = document.createElement("label");
+        label2.textContent = "HTTP Method";
+        inpt2.type = "text";
+        inpt2.className = "method";
+        section.appendChild(label1);
+        section.appendChild(inpt1);
+        section.appendChild(label2);
+        section.appendChild(inpt2);
+        form.insertBefore(section, addRouteSection);
+      });
+
+      form.addEventListener("submit", submitForm);
+      function submitForm(e) {
+        e.preventDefault();
+        let objectApis = {};
+        let arrApis = [];
+        let apis = document.querySelectorAll(".ApiUrlSection");
+        [...apis].forEach((el, i) => {
+          let tech = el.querySelector(".apiTech").value;
+          let url = el.querySelector(".apiUrl").value;
+          objectApis[tech] = url;
+          arrApis.push({
+            tech: tech,
+            url: url
+          });
+        });
+
+        let objectRoutes = {};
+        let arrRoutes = [];
+        let routes = document.querySelectorAll(".ApiRouteSection");
+        [...routes].forEach((el, i) => {
+          let route = el.querySelector(".route").value;
+          let method = el.querySelector(".method").value;
+          objectRoutes[route] = {
+            route: route,
+            method: method
+          };
+          arrRoutes.push({
+            route: route,
+            method: method
+          });
+        });
+        let options = {
+          delay: document.querySelector("[name=delay]").value,
+          maxTime: document.querySelector("[name=maxTime]").value
+        };
+        const test = {
+          apis: objectApis,
+          routes: objectRoutes,
+          options,
+          arrRoutes,
+          arrApis
+        };
+        ipcRenderer.send("test:add", test);
+      }
+    </script>
+  </body>
+</html>

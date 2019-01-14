@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Wyniki</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <nav>
+        <div class="nav-wrapper"><a class="brand-logo center">Wyniki</a></div>
+      </nav>
+    </div>
+
+    <script>
+      const electron = require("electron");
+      const { ipcRenderer } = electron;
+
+      ipcRenderer.on("test:result", function(e, result) {
+        console.log(result);
+        const container = document.querySelector(".container");
+        container.innerHTML = "";
+        const description = document.createElement("div");
+
+        result.log.forEach(el => {
+          let p = document.createElement("p");
+          p.textContent = el;
+          p.className = "flow-text";
+          description.appendChild(p);
+        });
+
+        container.appendChild(description);
+        // let technologies = Object.keys(result.result);
+        // technologies.forEach(tech => {
+        //   let div = document.createElement("div");
+        //   let header = document.createElement("h3");
+        //   header.textContent = tech;
+        //   const path = Object.keys(result.result[tech]);
+        //   let content = "";
+        //   path.forEach(el => {
+        //     const href = result.result[tech][el].href;
+        //     const ops = result.result[tech][el].hz;
+        //     const route = result.result[tech][el].name;
+        //     // const method = result.result[tech][el].options.method;
+        //     content += `<ul>
+        //       <li><strong>Url: </strong>${href}</li>
+        //       <li><strong>Technologia Api: </strong>${tech}</li>
+        //       <li><strong>Operacje/s: </strong>${ops}</li>
+        //       <li><strong>Operacja: </strong>${route} - ${method}</li>
+        //     </ul>`;
+        //   });
+
+        //   div.appendChild(header);
+        //   div.appendChild(content);
+        //   container.appendChild(div);
+        // });
+      });
+    </script>
+  </body>
+</html>
