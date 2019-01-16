@@ -39,13 +39,15 @@
       runTestBtn.type = "button";
       runTestBtn.textContent = "Rozpocznij test";
       runTestBtn.addEventListener("click", () => {
-        runTest(test.apis, test.routes, test.options);
+        runTest(test.apis, test.routes, test.options, test.testName);
       });
       ul.className = "collection";
       const li = document.createElement("li");
       li.className = "collection-item";
       let html =
-        "<ul class='test'><h3 class='center-align'>Test <i class='material-icons' onclick='removeItem(event)'>clear</i></h3>";
+        "<ul class='test'><h3 class='center-align'>" +
+        test.testName +
+        "<i class='material-icons' onclick='removeItem(event)'>clear</i></h3>";
       let routesHtml = "";
       test.arrRoutes.forEach(el => {
         routesHtml += `<li>Route: ${el.route}, Method: ${el.method}</li>`;
@@ -74,7 +76,7 @@
       }
     }
 
-    function runTest(apis, routes, options) {
+    function runTest(apis, routes, options, testName) {
       // console.log(apis);
       // console.log(routes);
       // console.log(options);
@@ -82,6 +84,7 @@
       let results = {};
       apiBenchmark.compare(apis, routes, options, function(err, result) {
         // console.log(result);
+        results.testName = testName;
         results.result = result;
         results.log = $log;
         $log = [];

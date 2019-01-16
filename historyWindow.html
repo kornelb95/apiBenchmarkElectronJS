@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Poprzednie testy</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav>
+      <div class="nav-wrapper">
+        <a class="brand-logo center">Poprzednie testy</a>
+      </div>
+    </nav>
+    <div>
+      <label for="">Flitruj po nazwie</label>
+      <input type="text" onkeyup="filter(event)" />
+    </div>
+    <table class="highlight centered">
+      <thead>
+        <tr>
+          <th>Nazwa testu</th>
+          <th>Wyniki</th>
+          <th>Data utworzenia</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+    </table>
+    <script>
+      const electron = require("electron");
+      const { ipcRenderer } = electron;
+      let data;
+      ipcRenderer.on("history_data", function(e, history_data) {
+        console.log(history_data);
+        data = history_data;
+        let html = "";
+        data.forEach(el => {
+          let date = new Date(el._doc.date);
+          let formattedDate =
+            date.getDate() +
+            "-" +
+            (date.getMonth() + 1) +
+            "-" +
+            date.getFullYear();
+          html += `
+              <tr>
+                <td>${el._doc.name}</td>
+                <td>${el._doc.log.split(",").join("<br>")}</td>
+                <td>${formattedDate}</td>
+              </tr>
+        `;
+        });
+        document.querySelector("tbody").innerHTML = html;
+      });
+      const filter = e => {
+        const value = e.target.value;
+        const tbody = document.querySelector("tbody");
+        tbody.innerHTML = "";
+        const filterData = data.filter(el => {
+          return value !== "" ? el._doc.name === value : true;
+        });
+        let html = "";
+        filterData.forEach(el => {
+          let date = new Date(el._doc.date);
+          let formattedDate =
+            date.getDate() +
+            "-" +
+            (date.getMonth() + 1) +
+            "-" +
+            date.getFullYear();
+          html += `
+              <tr>
+                <td>${el._doc.name}</td>
+                <td>${el._doc.log.split(",").join("<br>")}</td>
+                <td>${formattedDate}</td>
+              </tr>
+        `;
+        });
+        tbody.innerHTML = html;
+      };
+    </script>
+  </body>
+</html>

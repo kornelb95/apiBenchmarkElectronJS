@@ -1,14 +1,27 @@
 const electron = require("electron");
 const url = require("url");
 const path = require("path");
-
+const mongoose = require("mongoose");
 const { app, BrowserWindow, Menu, ipcMain, ipcRenderer } = electron;
-
+mongoose.connect(
+  "mongodb://korni007:f0d3f252@ds157864.mlab.com:57864/api-benchmark",
+  { useNewUrlParser: true }
+);
+const testSchema = new mongoose.Schema({
+  name: String,
+  log: String,
+  date: {
+    type: Date,
+    default: Date.now
+  }
+});
+const Test = mongoose.model("Test", testSchema);
 //SET ENV
 // process.env.NODE_ENV = "production";
 
 let mainWindow;
 let addWindow;
+let historyWindow;
 let resultsWindow;
 //Listen for app to be ready
 app.on("ready", function() {
@@ -31,6 +44,32 @@ app.on("ready", function() {
   //Insert menu
   Menu.setApplicationMenu(mainMenu);
 });
+function createHistoryWindow() {
+  historyWindow = new BrowserWindow({
+    width: 600,
+    height: 800,
+    title: "Poprzednie testy"
+  });
+  //Load html into window
+  historyWindow.loadURL(
+    url.format({
+      pathname: path.join(__dirname, "historyWindow.html"),
+      protocol: "file:",
+      slashes: true
+    })
+  );
+  let data;
+  Test.find().then(res => {
+    data = res;
+  });
+  historyWindow.webContents.on("did-finish-load", (event, url) => {
+    historyWindow.webContents.send("history_data", data);
+  });
+  //Garbage collection handle
+  historyWindow.on("close", function() {
+    historyWindow = null;
+  });
+}
 //Handle create add window
 function createAddWindow() {
   //Create new window
@@ -58,7 +97,14 @@ ipcMain.on("test:add", function(e, test) {
   addWindow.close();
 });
 ipcMain.on("test:result", function(e, result) {
-  // console.log("odebralem:" + result);
+  console.log(result);
+  const test = new Test({
+    name: result.testName,
+    log: result.log
+  });
+  test.save(function(err) {
+    if (err) console.log(err);
+  });
   //Create new window
   resultsWindow = new BrowserWindow({
     width: 600,
@@ -102,6 +148,12 @@ const mainMenuTemplate = [
         }
       }
     ]
+  },
+  {
+    label: "Historyczne dane",
+    click() {
+      createHistoryWindow();
+    }
   }
 ];
 //If mac, add empty object to menu

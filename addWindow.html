@@ -10,6 +10,7 @@
   <body>
     <div class="container">
       <form>
+        <div><label>Nazwa testu</label><input type="text" id="testName" /></div>
         <div class="ApiUrlSection">
           <label>Api Url:</label>
           <input
@@ -168,6 +169,7 @@
           maxTime: document.querySelector("[name=maxTime]").value
         };
         const test = {
+          testName: document.querySelector("#testName").value,
           apis: objectApis,
           routes: objectRoutes,
           options,
